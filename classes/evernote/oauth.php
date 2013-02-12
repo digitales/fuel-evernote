@@ -11,6 +11,8 @@
  
 namespace Evernote;
 
+use EDAM\UserStore\UserStoreClient,
+    EDAM\NoteStore\NoteStoreClient;
 
 function getCallbackUrl()
 {
@@ -31,13 +33,18 @@ class Evernote_Oauth {
 	protected $access_token_url     = 'https://sandbox.evernote.com/oauth';
 	protected $signature_method     = 'HMAC-SHA1';
 	protected $version              = '1.23';
-	protected $note_store_host      = 'sandbox.evernote.com';
-    protected $note_store_port      = 'sandbox.evernote.com';
+	protected static $note_store_host      = 'sandbox.evernote.com';
+    protected static $note_store_port      = '443';
+    protected static $note_store_protocol  = 'https';
+    
     
 	protected $callback = null;
 	protected $errors = array();
 	protected $enable_debug = false;
     protected $session_name = 'evernote_oauthtokens';
+    
+    protected static $user_store = null;
+    protected static $note_store = null;
 
 	/**
 	 * Loads in the Twitter config and sets everything up.
@@ -695,5 +702,47 @@ class Evernote_Oauth {
 
 		return $retval;
 	}
+
+
+    
+    public static function set_user_store( $user_store )
+    {
+        self::$user_store = $user_store;
+        return self::$user_store;
+    }
+    
+    
+    protected static function get_user_store()
+    {
+        
+        if ( self::$user_store ){
+            return self::$user_store;
+        }
+        
+        $userStoreHttpClient =  new \THttpClient( self::$note_store_host, self::$note_store_port, 'edam/user', self::$note_store_protocol );
+        
+        $userStoreProtocol = new \TBinaryProtocol( $userStoreHttpClient );
+        
+        $user_store = new UserStoreClient( $userStoreProtocol, $userStoreProtocol );
+        
+        self::set_user_store( $user_store );
+        
+        return $user_store;
+    }
+    
+    
+    public static function get_user_client()
+    {
+        
+        
+  
+  
+  //echo '$userStoreHttpClient<pre>'.print_r($userStoreHttpClient, 1).'</pre>';
+  //echo '$userStore<pre>'.print_r($userStore, 1).'</pre>';
+  //exit;
+        // $user_client = new \EDAM\UserStore\UserStoreClient();
+        return self::get_user_store();
+        //$userStore;
+    }
 
 }

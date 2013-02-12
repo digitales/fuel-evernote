@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Fuel Evernote Package
  *
@@ -72,10 +73,23 @@ class Evernote {
 	 * An alias for Evernote_Oauth::set_access_tokens.
 	 *
 	 * @param   array  $tokens  The access tokens
-	 * @return  Twitter_Oauth
+	 * @return  Evernote_Oauth
 	 */
 	public static function set_tokens($tokens)
 	{
 		return static::$oauth->set_access_tokens($tokens);
 	}
+    
+    
+    public static function get_user()
+    {
+        $tokens = static::get_tokens();
+        
+        $user_store = static::$oauth->get_user_client( );
+        
+        return $user_store->getUser( $tokens['access_key'] );
+        
+    }
+    
+    
 }
