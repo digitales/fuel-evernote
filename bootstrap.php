@@ -3,11 +3,19 @@
 Autoloader::add_core_namespace('Evernote');
 
 Autoloader::add_classes(array(
-	'Evernote\\Evernote'                 => __DIR__.'/classes/evernote.php',
-	'Evernote\\EvernoteException'        => __DIR__.'/classes/evernote.php',
-	'Evernote\\Evernote_Connection'      => __DIR__.'/classes/evernote/connection.php',
-	'Evernote\\Evernote_Oauth'           => __DIR__.'/classes/evernote/oauth.php',
-	'Evernote\\Evernote_Oauth_Response'  => __DIR__.'/classes/evernote/oauth/response.php',
+	'Evernote\\Evernote'                => __DIR__.'/classes/evernote.php',
+	'Evernote\\Client'                  => __DIR__.'/classes/client.php',
+    'Evernote\\Evernote_Exception'      => __DIR__.'/classes/evernote.php',
+	'Evernote\\Evernote_Connection'     => __DIR__.'/classes/evernote/connection.php',
+	'Evernote\\Evernote_Oauth_Response' => __DIR__.'/classes/evernote/oauth/response.php',
+    
+    'Evernote\\Api\\Api_Interface'      => __DIR__.'/classes/api/api_interface.php',
+    'Evernote\\Api\\Abstract_Api'       => __DIR__.'/classes/api/abstract/api.php',
+    
+    'Evernote\\Api\\User'               => __DIR__.'/classes/api/user.php',
+    'Evernote\\Api\\User\\Authenticate' => __DIR__.'/classes/api/user/authenticate.php',
+    
+    
     
     'TType'                             => __DIR__.'/lib/Thrift.php',
     'TMessageType'                      => __DIR__.'/lib/Thrift.php',

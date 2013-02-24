@@ -2,23 +2,28 @@
 
 /**
  * Fuel Evernote Package
+ * 
+ * Inspired by Elliot Haughin's CodeIgniter Twitter library.
  *
- * This is a port of Elliot Haughin's CodeIgniter Twitter library.
- * You can find his library here http://www.haughin.com/code/twitter/
- *
- * @copyright  2011 Dan Horrigan
+ * @copyright  2013 Ross Tweedie
  * @license    MIT License
  */
 
 namespace Evernote;
 
-class EvernoteException extends \Exception {}
+class Evernote_Exception extends \Exception {}
 
 class Evernote {
+    
+    
+    /**
+     * The list of loaded API instances
+     *
+     * @var array
+     */
+    private $apis = array();
+    
 
-	/**
-	 * Oh noz! a Singleton!!!
-	 */
 	private function __construct() { }
 
 	/**
@@ -29,7 +34,7 @@ class Evernote {
 	/**
 	 * @var  Evernote_Oauth  $oauth  Holds the Evernote_Oauth instance.
 	 */
-	protected static $oauth = null;
+	protected static $client = null;
 
 	/**
 	 * Creates the Evernote_Oauth instance
@@ -38,7 +43,7 @@ class Evernote {
 	 */
 	public static function _init()
 	{
-		static::$oauth = new \Evernote_Oauth();
+		static::$client  = new \Evernote\Client();
 	}
 
 	/**
@@ -51,9 +56,9 @@ class Evernote {
 	 */
 	public static function __callStatic($method, $args)
 	{
-		if (is_callable(array(static::$oauth, $method)))
+		if (is_callable(array(static::$client, $method)))
 		{
-			return call_user_func_array(array(static::$oauth, $method), $args);
+			return call_user_func_array(array(static::$client, $method), $args);
 		}
 
 		throw new \BadMethodCallException("Method Evernote::$method does not exist.");
@@ -66,9 +71,10 @@ class Evernote {
 	 */
 	public static function get_tokens()
 	{
-		return static::$oauth->get_tokens();
+		return static::$client->get_tokens();
 	}
 
+    
 	/**
 	 * An alias for Evernote_Oauth::set_access_tokens.
 	 *
@@ -77,19 +83,25 @@ class Evernote {
 	 */
 	public static function set_tokens($tokens)
 	{
-		return static::$oauth->set_access_tokens($tokens);
+        $tokens_to_pass = array();
+        
+        foreach( $tokens AS $token_key => $token_value ){
+            switch( $token_key ){
+                case 'oauth_token':
+                case 'token':
+                    $tokens_to_pass['oauth_token'] = $token_value;
+                    break;
+                case 'oauth_token_secret':
+                case 'oauth_secret':
+                case 'secret':
+                    $tokens_to_pass['oauth_token_secret'] = $token_value;
+                    break;
+                default:
+                    continue;
+                    break;
+            }   
+        }        
+		return static::$client->set_access_tokens( $tokens_to_pass );
 	}
-    
-    
-    public static function get_user()
-    {
-        $tokens = static::get_tokens();
-        
-        $user_store = static::$oauth->get_user_client( );
-        
-        return $user_store->getUser( $tokens['access_key'] );
-        
-    }
-    
     
 }

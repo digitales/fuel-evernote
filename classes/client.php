@@ -24,7 +24,7 @@ function getCallbackUrl()
     return $thisUrl;
 }
 
-class Evernote_Oauth {
+class Client {
 	
 	protected $connection = null;
 	protected $tokens = array();
@@ -45,9 +45,10 @@ class Evernote_Oauth {
     
     protected static $user_store = null;
     protected static $note_store = null;
-
+    
+    
 	/**
-	 * Loads in the Twitter config and sets everything up.
+	 * Loads in the Evernote config and sets everything up.
 	 *
 	 * @return void
 	 */
@@ -102,45 +103,7 @@ class Evernote_Oauth {
 		return $this;
 	}
 	
-	/**
-	 * Sends an HTTP request to the twitter API.
-	 *
-	 * @param   string  $method  The HTTP method
-	 * @param   string  $path    The API URI
-	 * @param   array   $args    An array of arguments to send
-	 * @return  mixed
-	 */
-	public function call($method, $path, $args = null)
-	{
-		$response = $this->http_request(strtoupper($method), $this->api_url.'/'.$path.'.json', $args);
-
-		return ( $response === null ) ? false : $response->_result;
-	}
-
-	/**
-	 * Sends a GET request to the twitter API.
-	 *
-	 * @param   string  $path  The API URI
-	 * @param   array   $args  An array of arguments to send
-	 * @return  mixed
-	 */
-	public function get($path, $args = null)
-	{
-		return $this->http_request('GET', $this->api_url.'/'.$path.'.json', $args);
-	}
-
-	/**
-	 * Sends a POST request to the twitter API.
-	 *
-	 * @param   string  $path  The API URI
-	 * @param   array   $args  An array of arguments to send
-	 * @return  mixed
-	 */
-	public function post($path, $args = null)
-	{
-		return $this->http_request('POST', $this->api_url.'/'.$path.'.json', $args);
-	}
-    
+	
 
 	/**
 	 * Checks if the user it logged in through Twitter.
@@ -445,8 +408,6 @@ class Evernote_Oauth {
 	{
         $result = array();
         
-        echo '$this->tokens<pre>'.print_r($this->tokens, 1).'</pre>';
-        
         try
         {
             $oauth_verifier = \Session::get('evernote_oauthVerifier');
@@ -733,16 +694,60 @@ class Evernote_Oauth {
     
     public static function get_user_client()
     {
-        
-        
-  
-  
-  //echo '$userStoreHttpClient<pre>'.print_r($userStoreHttpClient, 1).'</pre>';
-  //echo '$userStore<pre>'.print_r($userStore, 1).'</pre>';
-  //exit;
-        // $user_client = new \EDAM\UserStore\UserStoreClient();
         return self::get_user_store();
-        //$userStore;
+    }
+    
+    
+    
+    
+    /**
+     * @param string $name
+     *
+     * @return Api\Api_Interface
+     *
+     * @throws Exception_Argument_Invalid
+     */
+    public function api($name)
+    {
+        // Only load the API classes if it is not already loaded.
+        if (!isset($this->apis[$name])) {
+            switch ($name) {
+                case 'user':
+                    $api = new Api\User( $this );
+                    break;
+
+                case 'sync':
+                    $api = new Api\Sync( $this );
+                    break;
+                
+                case 'note':
+                    $api = new Api\Note( $this );
+                    break;
+
+                case 'notebook':
+                    $api = new Api\Notebook( $this );
+                    break;
+
+                case 'tag':
+                    $api = new Api\Tag( $this );
+                    break;
+
+                case 'Search':
+                    $api = new Api\Search( $this );
+                    break;
+
+                case 'resource':
+                    $api = new Api\Resource( $this );
+                    break;
+
+                default:
+                    throw new Exception_Argument_Invalid();
+            }
+
+            $this->apis[$name] = $api;
+        }
+
+        return $this->apis[$name];
     }
 
 }
