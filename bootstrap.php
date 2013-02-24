@@ -16,7 +16,7 @@ Autoloader::add_classes(array(
     'Evernote\\Api\\User\\Authenticate' => __DIR__.'/classes/api/user/authenticate.php',
     
     
-    
+    /** ------- Thrift files ------- */
     'TType'                             => __DIR__.'/lib/Thrift.php',
     'TMessageType'                      => __DIR__.'/lib/Thrift.php',
     'TException'                        => __DIR__.'/lib/Thrift.php',
