@@ -41,10 +41,10 @@ class Client {
 	protected $callback = null;
 	protected $errors = array();
 	protected $enable_debug = false;
-    protected $session_name = 'evernote_oauthtokens';
+    protected static $session_name = 'evernote_oauthtokens';
     
-    protected static $user_store = null;
-    protected static $note_store = null;
+    protected $user_store = null;
+    protected $note_store = null;
     
     
 	/**
@@ -192,7 +192,7 @@ class Client {
 	 */
 	public function logout()
 	{
-		\Session::delete( $this->session_name );
+		\Session::delete( self::$session_name );
 		return $this;
 	}
     
@@ -249,7 +249,7 @@ class Client {
 	 */
 	public function get_access_key()
 	{
-        return $this->get_value( 'access_key' );
+        return self::get_value( 'access_key' );
 	}
 
 	/**
@@ -259,35 +259,35 @@ class Client {
 	 */
 	public function get_access_secret()
 	{
-        return $this->get_value( 'access_secret' );
+        return self::get_value( 'access_secret' );
 	}
 	
     public function get_request_token()
 	{
-        return $this->get_value( 'request_token' );
+        return self::get_value( 'request_token' );
 	}
     
     public function get_request_secret()
 	{
-        return $this->get_value( 'request_secret' );
+        return self::get_value( 'request_secret' );
 	}
     
     public function get_shard_id(){
-        return $this->get_value( 'shard_id' );
+        return self::get_value( 'shard_id' );
     }
     
     public function get_evernote_user_id(){
-        return $this->get_value( 'evernote_user_id' );
+        return self::get_value( 'evernote_user_id' );
     }
     
     public function get_expires(){
-        return $this->get_value( 'expires' );
+        return self::get_value( 'expires' );
     }
     
     
-    public function get_value( $key, $session_name = null ){
+    public static function get_value( $key, $session_name = null ){
         
-        if ( ! $session_name ){ $session_name = $this->session_name; }
+        if ( ! $session_name ){ $session_name = self::$session_name; }
         
         $tokens = \Session::get( $session_name );
 		return ($tokens === false || ! isset($tokens[ $key ]) || empty($tokens[ $key ])) ? null : $tokens[ $key ];
@@ -295,7 +295,7 @@ class Client {
     
     public function set_value( $key, $value, $session_name = null)
     {
-        if ( ! $session_name ){ $session_name = $this->session_name; }
+        if ( ! $session_name ){ $session_name = self::$session_name; }
         
         $tokens = \Session::get( $session_name );
 		
@@ -666,18 +666,18 @@ class Client {
 
 
     
-    public static function set_user_store( $user_store )
+    public function set_user_store( $user_store )
     {
-        self::$user_store = $user_store;
-        return self::$user_store;
+        $this->user_store = $user_store;
+        return $this->user_store;
     }
     
     
-    protected static function get_user_store()
+    protected function get_user_store()
     {
         
-        if ( self::$user_store ){
-            return self::$user_store;
+        if ( $this->user_store ){
+            return $this->user_store;
         }
         
         $userStoreHttpClient =  new \THttpClient( self::$note_store_host, self::$note_store_port, 'edam/user', self::$note_store_protocol );
@@ -686,17 +686,65 @@ class Client {
         
         $user_store = new UserStoreClient( $userStoreProtocol, $userStoreProtocol );
         
-        self::set_user_store( $user_store );
+        $this->set_user_store( $user_store );
         
         return $user_store;
     }
     
     
-    public static function get_user_client()
+    protected function get_note_store()
     {
-        return self::get_user_store();
+        
+        if ( $this->note_store ){
+            return $this->note_store;
+        }
+        
+        $user_store = $this->get_user_store();
+        $note_store_url = $user_store->getNoteStoreUrl( $this->get_access_key() );
+        
+        // Now let's examine the note store URL, then we can init the note store.
+        $parts = parse_url($note_store_url);
+        
+        if (!isset($parts['port'])) {
+            if ($parts['scheme'] === 'https') {
+                self::$note_store_port = 443;
+            } else {
+                self::$note_store_port = 80;
+            }
+        }
+        
+        self::$note_store_host = $parts['host'];
+        self::$note_store_protocol = $parts['scheme'];
+
+        $note_store_http_client =  new \THttpClient( self::$note_store_host, self::$note_store_port, $parts['path'], self::$note_store_protocol );
+        
+        $note_store_protocol = new \TBinaryProtocol( $note_store_http_client );
+        
+        $note_store = new NoteStoreClient( $note_store_protocol, $note_store_protocol );
+        
+        $this->set_note_store( $note_store );
+        
+        return $note_store;
     }
     
+
+    public function set_note_store( $note_store )
+    {
+        $this->note_store = $note_store;
+        return $this->note_store;
+    }
+    
+    
+    
+    public function get_user_client()
+    {
+        return $this->get_user_store();
+    }
+    
+    public function get_note_client()
+    {
+        return $this->get_note_store();
+    }
     
     
     

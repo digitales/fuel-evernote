@@ -24,7 +24,11 @@ class Evernote {
     private $apis = array();
     
 
-	private function __construct() { }
+	public function __construct()
+    {
+        $this->_init();
+        
+    }
 
 	/**
 	 * @var  string  $version  The current version of the package
