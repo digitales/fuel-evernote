@@ -50,6 +50,19 @@ Autoloader::add_classes(array(
     
     'EDAM\NoteStore\NoteStoreClient'        => __DIR__.'/lib/packages/NoteStore/NoteStore.php',
     
+    'EDAM\NoteStore'                        => __DIR__.'/lib/packages/NoteStore/NoteStore_types.php',
+    /*'EDAM\NoteStore\SyncChunk'              => __DIR__.'/lib/packages/NoteStore/NoteStore_types.php',
+    'EDAM\NoteStore\SyncChunkFilter'        => __DIR__.'/lib/packages/NoteStore/NoteStore_types.php',
+    'EDAM\NoteStore\NoteList'               => __DIR__.'/lib/packages/NoteStore/NoteStore_types.php',
+    'EDAM\NoteStore\NoteMetadata'           => __DIR__.'/lib/packages/NoteStore/NoteStore_types.php',
+    'EDAM\NoteStore\NoteList'               => __DIR__.'/lib/packages/NoteStore/NoteStore_types.php',
+    'EDAM\NoteStore\NoteList'               => __DIR__.'/lib/packages/NoteStore/NoteStore_types.php',
+    'EDAM\NoteStore\NoteList'               => __DIR__.'/lib/packages/NoteStore/NoteStore_types.php',
+    */
+    
+    
+    
+    
     'EDAM\Error\EDAMUserException'          => __DIR__.'/lib/packages/Errors/Errors_types.php',
     'EDAM\Error\EDAMErrorCode'              => __DIR__.'/lib/packages/Errors/Errors_types.php',
    
