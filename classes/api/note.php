@@ -33,19 +33,29 @@ use Evernote\Api\Abstract_Api;
  */
 class Note extends Abstract_Api
 {
-    protected static $note_store;
+    protected static $note_store, $filter;
     
     function __construct( $client = null )
     {
         parent::__construct( $client );
         
         static::$note_store = $this->client->get_note_client();
+        static::$filter = new \Edam\NoteStore\NoteFilter();
     }
     
     
     
-    public function find( $filter, $offset = 0, $max_notes = 100 ){
+    public function find( $filter = null, $offset = 0, $max_notes = 100 )
+    {
+        
         return self::$note_store->findNotes($this->client->get_access_key(), $filter, $offset, $max_notes);
+    }
+    
+    public function find_for_notebook( $guid, $offset = 0, $max_notes = 100 )
+    {
+        self::$filter->notebookGuid = $guid;
+        
+        return $this->find( self::$filter, $offset, $max_notes );
     }
     
     public function find_offset( $filter, $guid )
@@ -62,7 +72,27 @@ class Note extends Abstract_Api
         return self::$note_store->findNoteCounts( $this->client->get_access_key(), $filter, $with_trash );
     }
     
-    public function get( $guid, $with_content, $with_resources_data, $with_resources_recognition, $with_resources_alternate_data)
+    
+    /*
+     * Get a note.
+     *
+     * Returns the current state of the note in the service with the provided GUID. The ENML contents of the note will only be provided if the 'withContent' parameter is true. The service will include the meta-data for each resource in the note, but the binary contents of the resources and their recognition data will be omitted. If the Note is found in a public notebook, the authenticationToken will be ignored (so it could be an empty string). The applicationData fields are returned as keysOnly.
+     *
+     * @param  guid The GUID of the note to be retrieved.
+     * @param  withContent If true, the note will include the ENML contents of its 'content' field.
+     * @param  withResourcesData If true, any Resource elements in this Note will include the binary contents of their 'data' field's body.
+     * @param  withResourcesRecognition If true, any Resource elements will include the binary contents of the 'recognition' field's body if recognition data is present.
+     * @param  withResourcesAlternateData If true, any Resource elements in this Note will include the binary contents of their 'alternateData' fields' body, if an alternate form is present.
+     *
+     * @return EDAM\Types\Note Object
+     *
+     * @throws  EDAMUserException
+     * BAD_DATA_FORMAT "Note.guid" - if the parameter is missing
+     * PERMISSION_DENIED "Note" - private note, user doesn't own
+     * @throws  EDAMNotFoundException
+     * "Note.guid" - not found, by GUID
+    */
+    public function get( $guid, $with_content = true, $with_resources_data = false, $with_resources_recognition = false, $with_resources_alternate_data = false)
     {
         return self::$note_store->getNote( $this->client->get_access_key(), $guid, $with_content, $with_resources_data, $with_resources_recognition, $with_resources_alternate_data);
     }
@@ -96,10 +126,10 @@ class Note extends Abstract_Api
         return self::$note_store->updateNote( $this->client->get_access_key(), $note );
     }
     
-    public function delete( $guid )
-    {
-        return self::$note_store->deleteNote( $this->client->get_access_key(), $guid );
-    }
+    //public function delete( $guid )
+    //{
+    //    return self::$note_store->deleteNote( $this->client->get_access_key(), $guid );
+    //}
     
     public function expunge( $guid )
     {
