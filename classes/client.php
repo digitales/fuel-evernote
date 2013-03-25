@@ -769,22 +769,26 @@ class Client {
                     break;
                 
                 case 'note':
+                case 'notes':
                     $api = new Api\Note( $this );
                     break;
 
                 case 'notebook':
+                case 'notebooks':
                     $api = new Api\Notebook( $this );
                     break;
 
                 case 'tag':
+                case 'tags':
                     $api = new Api\Tag( $this );
                     break;
 
-                case 'Search':
+                case 'search':
                     $api = new Api\Search( $this );
                     break;
 
                 case 'resource':
+                case 'resources':
                     $api = new Api\Resource( $this );
                     break;
 
