@@ -11,6 +11,8 @@ Autoloader::add_classes(array(
     
     'Evernote\\Api\\Api_Interface'          => __DIR__.'/classes/api/api_interface.php',
     'Evernote\\Api\\Abstract_Api'           => __DIR__.'/classes/api/abstract/api.php',
+    
+    'Evernote\\Api\\Sync'                   => __DIR__.'/classes/api/sync.php',
 
     'Evernote\\Api\\User'                   => __DIR__.'/classes/api/user.php',
     'Evernote\\Api\\User\\Authenticate'     => __DIR__.'/classes/api/user/authenticate.php',
