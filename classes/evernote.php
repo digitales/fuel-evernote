@@ -23,7 +23,7 @@ class Evernote {
      */
     private $apis = array();
     
-    public $allowed_tags = array( 'a', 'abbr','acronym','address','area','b','bdo','big','blockquote','br','caption','center','cite','code','col','colgroup','dd','del','dfn','div','dl','dt','em','font','h1','h2','h3','h4','h5','h6','hr','i','img','ins','kbd','li','map','ol','p','pre','q','s','samp','small','span','strike','strong','sub','sup','table','tbody','td','tfoot','th','thead','title','tr','tt','u','ul','var', 'xmp');
+    private static $allowed_tags = array( '<a>', '<abbr>','<acronym>','<address>','<area>','<b>','<bdo>','<big>','<blockquote>','<br>','<caption>','<center>','<cite>','<code>','<col>','<colgroup>','<dd>','<del>','<dfn>','<div>','<dl>','<dt>','<em>','<font>','<h1>','<h2>','<h3>','<h4>','<h5>','<h6>','<hr>','<i>','<img>','<ins>','<kbd>','<li>','<map>','<ol>','<p>','<pre>','<q>','<s>','<samp>','<small>','<span>','<strike>','<strong>','<sub>','<sup>','<table>','<tbody>','<td>','<tfoot>','<th>','<thead>','<title>','<tr>','<tt>','<u>','<ul>','<var>','<xmp>');
 
 	public function __construct()
     {
@@ -108,5 +108,17 @@ class Evernote {
         }        
 		return static::$client->set_access_tokens( $tokens_to_pass );
 	}
+    
+    
+    /**
+     * Get the tags allowed by Evernote
+     *
+     * @param void
+     * @return array
+     */
+    public static function get_allowed_tags( $as_string = true )
+    {
+        return ( $as_string == true )? implode( ',', self::$allowed_tags) : self::$allowed_tags ;
+    }
     
 }

@@ -33,7 +33,7 @@ use Evernote\Api\Abstract_Api;
  */
 class Note extends Abstract_Api
 {
-    protected static $note_store, $filter;
+    protected static $note_store, $filter, $note;
     
     function __construct( $client = null )
     {
@@ -43,7 +43,18 @@ class Note extends Abstract_Api
         static::$filter = new \Edam\NoteStore\NoteFilter();
     }
     
-    
+    /**
+     * Forge / create a new note
+     *
+     * @param array $note
+     * @return EDAM\Types\Note
+     */
+    function forge( $note = null )
+    {
+        static::$note = new \EDAM\Types\Note( $note );
+        
+        return static::$note;
+    }
     
     public function find( $filter = null, $offset = 0, $max_notes = 100 )
     {

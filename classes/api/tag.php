@@ -18,7 +18,7 @@ use Evernote\Api\Abstract_Api;
  */
 class Tag extends Abstract_Api
 {
-    protected static $note_store;
+    protected static $note_store, $tag;
     
     function __construct( $client = null )
     {
@@ -26,6 +26,21 @@ class Tag extends Abstract_Api
         
         static::$note_store = $this->client->get_note_client();
     }
+    
+    
+    /**
+     * Forge / create a new tag
+     *
+     * @param array $tag || null
+     *
+     * @return object EDAM\Types\Tag
+     */
+    public function forge( $tag = null )
+    {
+        static::$tag = new \EDAM\Types\Tag( $tag );
+        return static::$tag;
+    }
+    
     
     public function get_list( )
     {
