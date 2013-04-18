@@ -56,6 +56,7 @@ class Client {
 	{
 		$config = \Config::load('evernote', true);
 
+
 		$this->tokens = array(
 			'consumer_key' 		=> $config[$config['active']]['consumer_key'],
 			'consumer_secret' 	=> $config[$config['active']]['consumer_secret'],
@@ -65,6 +66,7 @@ class Client {
             'evernote_user_id'  => $this->get_evernote_user_id(),
             'expires'           => $this->get_expires()
 		);
+
 
         if ( isset( $config[$config['active']]['evernote_server'] ) && !empty( $config[$config['active']]['evernote_server'] ) ){
             $this->auth_url             = $config[$config['active']]['evernote_server'] . '/OAuth.action';
