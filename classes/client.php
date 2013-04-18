@@ -8,7 +8,7 @@
  * @copyright  2011 Dan Horrigan
  * @license    MIT License
  */
- 
+
 namespace Evernote;
 
 use EDAM\UserStore\UserStoreClient,
@@ -25,7 +25,7 @@ function getCallbackUrl()
 }
 
 class Client {
-	
+
 	protected $connection = null;
 	protected $tokens = array();
 	protected $auth_url             = 'https://sandbox.evernote.com/OAuth.action';
@@ -36,17 +36,17 @@ class Client {
 	protected static $note_store_host      = 'sandbox.evernote.com';
     protected static $note_store_port      = '443';
     protected static $note_store_protocol  = 'https';
-    
-    
+
+
 	protected $callback = null;
 	protected $errors = array();
 	protected $enable_debug = false;
     protected static $session_name = 'evernote_oauthtokens';
-    
+
     protected $user_store = null;
     protected $note_store = null;
-    
-    
+
+
 	/**
 	 * Loads in the Evernote config and sets everything up.
 	 *
@@ -55,7 +55,7 @@ class Client {
 	public function __construct()
 	{
 		$config = \Config::load('evernote', true);
-        
+
 		$this->tokens = array(
 			'consumer_key' 		=> $config[$config['active']]['consumer_key'],
 			'consumer_secret' 	=> $config[$config['active']]['consumer_secret'],
@@ -63,9 +63,27 @@ class Client {
 			'access_secret' 	=> $this->get_access_secret(),
             'shard_id'          => $this->get_shard_id(),
             'evernote_user_id'  => $this->get_evernote_user_id(),
-            'expires'           => $this->get_expires()  
+            'expires'           => $this->get_expires()
 		);
-        
+
+        if ( isset( $config[$config['active']]['evernote_server'] ) && !empty( $config[$config['active']]['evernote_server'] ) ){
+            $this->auth_url             = $config[$config['active']]['evernote_server'] . '/OAuth.action';
+            $this->request_token_url    = $config[$config['active']]['evernote_server'] . '/oauth';
+            $this->access_token_url     = $this->request_token_url;
+        }
+
+        if ( isset( $config[$config['active']]['notestore_host'] ) && !empty( $config[$config['active']]['notestore_host'] ) ){
+            self::$note_store_host = $config[$config['active']]['notestore_host'];
+        }
+
+        if ( isset( $config[$config['active']]['notestore_port'] ) && !empty( $config[$config['active']]['notestore_port'] ) ){
+            self::$note_store_port = $config[$config['active']]['notestore_port'];
+        }
+
+        if ( isset( $config[$config['active']]['notestore_protocol'] ) && !empty( $config[$config['active']]['notestore_protocol'] ) ){
+            self::$note_store_protocol = $config[$config['active']]['notestore_protocol'];
+        }
+
 		$this->check_login();
 	}
 
@@ -81,7 +99,7 @@ class Client {
 		{
 			return;
 		}
-		
+
 		if ( ! empty($this->errors))
 		{
 			foreach ($this->errors as $key => $e)
@@ -102,8 +120,8 @@ class Client {
 		$this->enable_debug = (bool) $debug;
 		return $this;
 	}
-	
-	
+
+
 
 	/**
 	 * Checks if the user it logged in through Twitter.
@@ -114,14 +132,14 @@ class Client {
 	{
 		$access_key = $this->get_access_key();
 		$access_secret = $this->get_access_secret();
-        
+
 		$logged_in = false;
-		
+
 		if ($this->get_access_key() !== null && $this->get_access_secret() !== null)
 		{
 			$logged_in = true;
 		}
-		
+
 		return $logged_in;
 	}
 
@@ -137,21 +155,21 @@ class Client {
 		{
 
             $this->handle_callback();
-            
+
 			$tokens = $this->get_access_token();
-            
+
             if ( ! empty($tokens['access_key']) && ! empty($tokens['oauth_token'] ) )
 			{
-                
+
                 $this->set_shard_id( $tokens['shard_id'] );
                 $this->set_evernote_user_id( $tokens['evernote_user_id'] );
                 $this->set_expires( $tokens['expires'] );
 			}
-			
+
 			\Response::redirect(\Uri::current());
 			return null;
 		}
-        
+
 	}
 
 	/**
@@ -161,27 +179,27 @@ class Client {
 	 */
 	public function login()
 	{
-        
+
 		if ( ( $this->get_access_key() === null || $this->get_access_secret() === null ) )
 		{
             echo 'case 1';
             $oauth = new \OAuth( $this->tokens['consumer_key'], $this->tokens['consumer_secret'] );
-            
+
             $request_token_info = $oauth->getRequestToken( $this->request_token_url, $this->get_callback() );
-            
+
             if ($request_token_info)
             {
-                
+
                 $this->set_request_tokens( $request_token_info );
             }
-    
+
             // Now we have the temp credentials, let's get the real ones.
-            
+
             // Now let's get the OAuth token
 			\Response::redirect( $this->get_auth_url() );
             return;
 		}
-		
+
 		return $this->check_login();
 	}
 
@@ -195,8 +213,8 @@ class Client {
 		\Session::delete( self::$session_name );
 		return $this;
 	}
-    
-    
+
+
     public function handle_callback()
     {
         $oauth_verifier = \Fuel\Core\Input::get('oauth_verifier');
@@ -208,9 +226,9 @@ class Client {
             return false;
         }
     }
-    
-    
-    
+
+
+
 
 	/**
 	 * Gets the Oauth tokens.
@@ -218,10 +236,10 @@ class Client {
 	 * @return  array  All of the Oauth tokens
 	 */
 	public function get_tokens()
-	{        
+	{
 		return $this->tokens;
 	}
-	
+
 	/**
 	 * Gets the Consumer Key
 	 *
@@ -231,7 +249,7 @@ class Client {
 	{
 		return $this->tokens['consumer_key'];
 	}
-	
+
 	/**
 	 * Gets the Consumer Secret
 	 *
@@ -241,7 +259,7 @@ class Client {
 	{
 		return $this->tokens['consumer_secret'];
 	}
-	
+
 	/**
 	 * Gets the Access Key from the Session.
 	 *
@@ -261,56 +279,56 @@ class Client {
 	{
         return self::get_value( 'access_secret' );
 	}
-	
+
     public function get_request_token()
 	{
         return self::get_value( 'request_token' );
 	}
-    
+
     public function get_request_secret()
 	{
         return self::get_value( 'request_secret' );
 	}
-    
+
     public function get_shard_id(){
         return self::get_value( 'shard_id' );
     }
-    
+
     public function get_evernote_user_id(){
         return self::get_value( 'evernote_user_id' );
     }
-    
+
     public function get_expires(){
         return self::get_value( 'expires' );
     }
-    
-    
+
+
     public static function get_value( $key, $session_name = null ){
-        
+
         if ( ! $session_name ){ $session_name = self::$session_name; }
-        
+
         $tokens = \Session::get( $session_name );
 		return ($tokens === false || ! isset($tokens[ $key ]) || empty($tokens[ $key ])) ? null : $tokens[ $key ];
     }
-    
+
     public function set_value( $key, $value, $session_name = null)
     {
         if ( ! $session_name ){ $session_name = self::$session_name; }
-        
+
         $tokens = \Session::get( $session_name );
-		
+
 		if ($tokens === false || ! is_array( $tokens ) ) {
 			$tokens = array( $key => $value );
 		} else {
 			$tokens[ $key ] = $value;
 		}
-		
+
 		\Session::set( $session_name, $tokens);
 
-		return $this;    
+		return $this;
     }
-    
-    
+
+
     /**
 	 * Sets the access key in the session
 	 *
@@ -321,31 +339,31 @@ class Client {
 	{
 		return $this->set_value('access_key', $access_key );
 	}
-	    
-    
+
+
     public function set_request_token( $request_token )
     {
         return $this->set_value('request_token', $request_token );
     }
-    
-    
+
+
     public function set_request_secret( $request_secret )
     {
         return $this->set_value('request_secret', $request_secret );
     }
-    
-    
+
+
 	public function set_shard_id ($shard_id )
 	{
 		return $this->set_value('shard_id', $shard_id );
 	}
-    
-    
+
+
 	public function set_evernote_user_id( $evernote_user_id )
 	{
 		return $this->set_value('evernote_user_id', $evernote_user_id );
 	}
-    
+
 	public function set_expires( $expires )
 	{
 		return $this->set_value('expires', $expires );
@@ -361,7 +379,7 @@ class Client {
 	{
         return $this->set_value('access_secret', $access_secret );
 	}
-    
+
 
 	/**
 	 * Sets the access tokens.
@@ -378,8 +396,8 @@ class Client {
 
 		return $this;
 	}
-    
-    
+
+
     public function set_request_tokens( $tokens )
     {
         $this->set_request_token( $tokens['oauth_token'] );
@@ -397,8 +415,8 @@ class Client {
 	{
 		return $this->auth_url.'?oauth_token='.$this->get_request_token();
 	}
-	
-	
+
+
 	/**
 	 * Gets the access token from Evernote
 	 *
@@ -407,38 +425,38 @@ class Client {
 	protected function get_access_token()
 	{
         $result = array();
-        
+
         try
         {
             $oauth_verifier = \Session::get('evernote_oauthVerifier');
-            
+
             $oauth = new \OAuth( $this->tokens['consumer_key'], $this->tokens['consumer_secret'] );
-            
+
             $request_token = $this->get_request_token();
             $request_token_secret = $this->get_request_secret();
-        
+
             $oauth->setToken($request_token, $request_token_secret);
             $access_token_info = $oauth->getAccessToken($this->access_token_url, null, $oauth_verifier);
-            
+
             echo '$access_token_info<pre>'.print_r($access_token_info, 1).'</pre>';
-        
+
             if ( $access_token_info ){
                 $this->set_access_key( $access_token_info['oauth_token'] );
                 $this->set_access_secret( $access_token_info['oauth_token_secret'] );
-                
+
                 $this->tokens['oauth_token']            = $access_token_info['oauth_token'];
                 $this->tokens['oauth_token_secret']     = $access_token_info['oauth_token_secret'];
                 $this->tokens['shard_id']               = $access_token_info['edam_shard'];
                 $this->tokens['evernote_user_id']       = $access_token_info['edam_userId'];
                 $this->tokens['expires']                = $access_token_info['edam_expires'];
-                
+
                 return $this->tokens;
             }
             return false;
         }catch ( \Exception $e ){
             return false;
         }
-        
+
 	}
 
 	/**
@@ -533,27 +551,27 @@ class Client {
 		{
 			$oauth['oauth_callback'] = $callback;
 		}
-		
+
 		$this->set_callback(null);
-		
+
 		$oauth['oauth_consumer_key']      = $this->get_consumer_key();
 		$oauth['oauth_token']             = $this->get_access_key();
 		$oauth['oauth_nonce']             = $this->generate_nonce();
 		$oauth['oauth_timestamp']         = time();
 		$oauth['oauth_signature_method']  = $this->signature_method;
 		$oauth['oauth_version']           = $this->version;
-		
+
 		array_walk($oauth, array($this, 'encode_rfc3986'));
-		
+
 		if (is_array($params))
 		{
 			array_walk($params, array($this, 'encode_rfc3986'));
 		}
-		
+
 		$encodedParams = array_merge($oauth, (array)$params);
-		
+
 		ksort($encodedParams);
-		
+
 		$oauth['oauth_signature'] = $this->encode_rfc3986($this->generate_signature($method, $url, $encodedParams));
 		return array('request' => $params, 'oauth' => $oauth);
 	}
@@ -593,16 +611,16 @@ class Client {
 		{
 			return false;
 		}
-		
+
 		// concatenating
 		$concat_params = '';
-		
+
 		foreach ($params as $k => $v)
 		{
 			$v = $this->encode_rfc3986($v);
 			$concat_params .= "{$k}={$v}&";
 		}
-		
+
 		$concat_params = $this->encode_rfc3986(substr($concat_params, 0, -1));
 
 		// normalize url
@@ -629,19 +647,19 @@ class Client {
 		$port = intval($url_parts['port']);
 
 		$retval = "{$scheme}://{$host}";
-		
+
 		if ($port > 0 && ( $scheme === 'http' && $port !== 80 ) || ( $scheme === 'https' && $port !== 443 ))
 		{
 			$retval .= ":{$port}";
 		}
-		
+
 		$retval .= $url_parts['path'];
-		
+
 		if ( !empty($url_parts['query']) )
 		{
 			$retval .= "?{$url_parts['query']}";
 		}
-		
+
 		return $retval;
 	}
 
@@ -665,46 +683,46 @@ class Client {
 	}
 
 
-    
+
     public function set_user_store( $user_store )
     {
         $this->user_store = $user_store;
         return $this->user_store;
     }
-    
-    
+
+
     protected function get_user_store()
     {
-        
+
         if ( $this->user_store ){
             return $this->user_store;
         }
-        
+
         $userStoreHttpClient =  new \THttpClient( self::$note_store_host, self::$note_store_port, 'edam/user', self::$note_store_protocol );
-        
+
         $userStoreProtocol = new \TBinaryProtocol( $userStoreHttpClient );
-        
+
         $user_store = new UserStoreClient( $userStoreProtocol, $userStoreProtocol );
-        
+
         $this->set_user_store( $user_store );
-        
+
         return $user_store;
     }
-    
-    
+
+
     protected function get_note_store()
     {
-        
+
         if ( $this->note_store ){
             return $this->note_store;
         }
-        
+
         $user_store = $this->get_user_store();
         $note_store_url = $user_store->getNoteStoreUrl( $this->get_access_key() );
-        
+
         // Now let's examine the note store URL, then we can init the note store.
         $parts = parse_url($note_store_url);
-        
+
         if (!isset($parts['port'])) {
             if ($parts['scheme'] === 'https') {
                 self::$note_store_port = 443;
@@ -712,42 +730,42 @@ class Client {
                 self::$note_store_port = 80;
             }
         }
-        
+
         self::$note_store_host = $parts['host'];
         self::$note_store_protocol = $parts['scheme'];
 
         $note_store_http_client =  new \THttpClient( self::$note_store_host, self::$note_store_port, $parts['path'], self::$note_store_protocol );
-        
+
         $note_store_protocol = new \TBinaryProtocol( $note_store_http_client );
-        
+
         $note_store = new NoteStoreClient( $note_store_protocol, $note_store_protocol );
-        
+
         $this->set_note_store( $note_store );
-        
+
         return $note_store;
     }
-    
+
 
     public function set_note_store( $note_store )
     {
         $this->note_store = $note_store;
         return $this->note_store;
     }
-    
-    
-    
+
+
+
     public function get_user_client()
     {
         return $this->get_user_store();
     }
-    
+
     public function get_note_client()
     {
         return $this->get_note_store();
     }
-    
-    
-    
+
+
+
     /**
      * @param string $name
      *
@@ -767,7 +785,7 @@ class Client {
                 case 'sync':
                     $api = new Api\Sync( $this );
                     break;
-                
+
                 case 'note':
                 case 'notes':
                     $api = new Api\Note( $this );
