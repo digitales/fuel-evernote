@@ -5,7 +5,7 @@
  * This is a port of Elliot Haughin's CodeIgniter Twitter library.
  * You can find his library here http://www.haughin.com/code/twitter/
  *
- * @copyright  2011 Dan Horrigan
+ * @copyright  2013 Ross Tweedie
  * @license    MIT License
  */
 
